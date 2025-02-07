@@ -19,7 +19,9 @@ public class SudokuSolver {
        System.out.println(puzzle.isValid());
     }
  
-    public static void solveSudoku(int[][] board) {
-
+    public static void solveSudoku(SudokuPuzzle puzzle, int pos) {
+         if (pos == 80 && puzzle.isValid()) {
+               SudokuIO.displayBoard(puzzle);
+         }
     }
  }
