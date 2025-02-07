@@ -11,6 +11,7 @@ public class SudokuInterface extends JFrame {
     private boolean[][] userEnteredCells;
 
     public SudokuInterface() {
+        System.out.println("New Sudoku Interface");
         setTitle("Sudoku Solver");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -20,8 +21,8 @@ public class SudokuInterface extends JFrame {
         
         // Create main panel with larger padding
         JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BorderLayout(15, 15));  // Increased from 10,10 to 15,15
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));  // Increased from 10 to 15
+        mainPanel.setLayout(new BorderLayout(15, 15));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
         // Create grid panel with thicker borders between 3x3 boxes
         JPanel gridPanel = new JPanel(new GridLayout(9, 9));
@@ -67,10 +68,10 @@ public class SudokuInterface extends JFrame {
     }
 
     private JTextField createSudokuCell(int row, int col) {
-        JTextField cell = new JTextField(2);  // Changed from 1 to 2 for wider cells
+        JTextField cell = new JTextField(2);
         cell.setHorizontalAlignment(JTextField.CENTER);
-        cell.setFont(new Font("Arial", Font.BOLD, 24));  // Increased font size from 20 to 24
-        cell.setPreferredSize(new Dimension(45, 45));  // Added fixed size for cells
+        cell.setFont(new Font("Arial", Font.BOLD, 24));
+        cell.setPreferredSize(new Dimension(45, 45));
         
         // Add borders to separate 3x3 boxes
         int top = row % 3 == 0 ? 2 : 1;
@@ -79,6 +80,13 @@ public class SudokuInterface extends JFrame {
         int right = col == 8 ? 2 : 1;
         
         cell.setBorder(BorderFactory.createMatteBorder(top, left, bottom, right, Color.BLACK));
+
+        // Add input validation and immediate feedback
+        cell.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { validateCell(cell, row, col); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { validateCell(cell, row, col); }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { validateCell(cell, row, col); }
+        });
 
         // Add input validation
         cell.addKeyListener(new KeyAdapter() {
@@ -101,6 +109,41 @@ public class SudokuInterface extends JFrame {
         });
 
         return cell;
+    }
+
+    private void validateCell(JTextField cell, int row, int col) {
+        String value = cell.getText().trim();
+        
+        // Reset background if empty
+        if (value.isEmpty()) {
+            cell.setBackground(Color.WHITE);
+            return;
+        }
+
+        try {
+            int[][] currentBoard = new int[9][9];
+            
+            // Get current board state
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 9; j++) {
+                    String cellValue = cells[i][j].getText().trim();
+                    currentBoard[i][j] = cellValue.isEmpty() ? 0 : Integer.parseInt(cellValue);
+                }
+            }
+
+            // Create temporary puzzle to validate
+            SudokuPuzzle tempPuzzle = new SudokuPuzzle(currentBoard);
+            
+            // Check if the current number makes the puzzle invalid
+            if (!tempPuzzle.isValid()) {
+                cell.setBackground(new Color(255, 200, 200)); // Light red
+            } else {
+                cell.setBackground(Color.WHITE);
+            }
+            
+        } catch (NumberFormatException e) {
+            cell.setBackground(new Color(255, 200, 200)); // Light red
+        }
     }
 
     private void solvePuzzle() {
@@ -154,6 +197,7 @@ public class SudokuInterface extends JFrame {
             for (int j = 0; j < 9; j++) {
                 cells[i][j].setText("");
                 cells[i][j].setForeground(originalTextColor);
+                cells[i][j].setBackground(Color.WHITE); // Reset background color
                 userEnteredCells[i][j] = false;
             }
         }
