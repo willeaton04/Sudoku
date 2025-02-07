@@ -1,25 +1,20 @@
+import javax.swing.SwingUtilities;
+
 public class SudokuSolver {
 
     private static int numBacktracks;
     private static int numChecks;
 
-
     public SudokuSolver() {
+        numBacktracks = 0;
+        numChecks = 0;
     }
- 
+
     public static void main(String[] var0) {
-   
-       int[][] board = new int[][]{{1, 0, 0, 0, 0, 3, 0, 0, 0},
-                                  {0, 3, 0, 0, 0, 0, 0, 0, 5},
-                                  {0, 0, 4, 0, 0, 0, 0, 0, 0},
-                                  {0, 0, 0, 2, 0, 0, 0, 0, 0}, 
-                                  {0, 0, 0, 0, 0, 0, 0, 0, 0}, 
-                                  {0, 0, 0, 0, 0, 0, 0, 0, 0}, 
-                                  {0, 0, 6, 0, 0, 0, 0, 9, 0}, 
-                                  {0, 0, 0, 0, 8, 0, 0, 0, 0}, 
-                                  {0, 0, 0, 0, 0, 0, 0, 0, 0}};
-       SudokuPuzzle puzzle = new SudokuPuzzle(board);
-       solve(puzzle, 0);
+        // Launch the GUI interface
+        SwingUtilities.invokeLater(() -> {
+            new SudokuInterface().setVisible(true);
+        });
     }
  
     private static void solve(SudokuPuzzle puzzle, int cellID) {
@@ -56,6 +51,54 @@ public class SudokuSolver {
         // Backtrack
         numBacktracks++;
         board[row][col] = 0;
+    }
+
+    public boolean solveForGUI(SudokuPuzzle puzzle) {
+        return solveHelper(puzzle, 0);
+    }
+
+    private boolean solveHelper(SudokuPuzzle puzzle, int cellID) {
+        int[][] board = puzzle.getBoard();
+        int row = cellID / 9;
+        int col = cellID % 9;
+        
+        // Base case - reached end of board
+        if (cellID >= 81) {
+            numChecks++;
+            if (puzzle.isValid()) {
+                return true;
+            }
+            return false;
+        }
+        
+        // Skip filled cells
+        if (board[row][col] != 0) {
+            return solveHelper(puzzle, cellID + 1);
+        }
+        
+        // Try values 1-9
+        for (int i = 1; i <= 9; i++) {
+            board[row][col] = i;
+            numChecks++;
+            if (puzzle.isValid()) {
+                if (solveHelper(puzzle, cellID + 1)) {
+                    return true;
+                }
+            }
+        }
+        
+        // Backtrack
+        numBacktracks++;
+        board[row][col] = 0;
+        return false;
+    }
+
+    public int getNumChecks() {
+        return numChecks;
+    }
+
+    public int getNumBacktracks() {
+        return numBacktracks;
     }
 }
  
